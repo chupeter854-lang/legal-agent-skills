@@ -40,6 +40,18 @@ cp -r subagent-dispatch legal-case-workbench ~/.hermes/skills/   # e.g. Hermes
 
 Both are plain Markdown plus a few Python scripts (`legal-case-workbench/scripts/`) with no external dependencies.
 
+To update later with `git pull`, clone the repo and symlink the skills into your skills directory:
+
+```bash
+git clone https://github.com/chupeter854-lang/legal-agent-skills.git
+ln -s "$PWD/legal-agent-skills/legal-case-workbench" ~/.claude/skills/legal-case-workbench
+ln -s "$PWD/legal-agent-skills/subagent-dispatch"    ~/.claude/skills/subagent-dispatch
+```
+
+## Getting started
+
+The skill does not open new conversations by itself. Start a new conversation and say "给某某案建立案件工作台" (set up a case workbench for case X); each later session, open a new conversation and say "打开某某案" (open case X) — it reads the one-page case index and carries on. Reading material and looking up law are done by subagents it dispatches inside the current conversation; they are not separate sessions. See "怎么启动" in [legal-case-workbench/README.md](legal-case-workbench/README.md).
+
 ## Four things to fill in before deploying
 
 The skills bind no specific platform or service, but four items are environment-specific:
@@ -60,7 +72,7 @@ Either way, the case files are the record of truth: anything a subagent remember
 
 ## Try it
 
-`examples/虚构买卖合同案/` is an entirely fictional sale-of-goods case (two batches, seven documents) with several contradictions that only cross-checking will catch — a ready-made test for the fact verifier.
+`legal-case-workbench/examples/虚构买卖合同案/` is an entirely fictional sale-of-goods case (two batches, seven documents) with several contradictions that only cross-checking will catch — a ready-made test for the fact verifier. It lives inside the skill folder, so it installs with the skill; once installed, ask the agent to "用案件分析工作台自带的示例案件试跑一下" (do a trial run with the bundled sample case).
 
 ## Credits
 

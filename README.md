@@ -38,6 +38,18 @@ cp -r subagent-dispatch legal-case-workbench ~/.hermes/skills/   # 例：Hermes
 
 两个都是纯 Markdown + 少量 Python 脚本（`legal-case-workbench/scripts/`），无外部依赖。
 
+想以后用 `git pull` 更新，可以把仓库克隆到本地，再用软链接接进技能目录：
+
+```bash
+git clone https://github.com/chupeter854-lang/legal-agent-skills.git
+ln -s "$PWD/legal-agent-skills/legal-case-workbench" ~/.claude/skills/legal-case-workbench
+ln -s "$PWD/legal-agent-skills/subagent-dispatch"    ~/.claude/skills/subagent-dispatch
+```
+
+## 怎么启动
+
+技能不会自己开新对话。新建一个对话，说“给某某案建立案件工作台”；以后每次新开对话说“打开某某案”，它读一页案件索引就接着干。读材料、查法条的活由它在当前对话里派子代理完成，子代理不是新会话。详见 [legal-case-workbench/README.md](legal-case-workbench/README.md) 的“怎么启动”。
+
 ## 部署前要改的四处
 
 技能不绑定具体平台和服务，但有几处必须按你的环境填：
@@ -58,7 +70,7 @@ cp -r subagent-dispatch legal-case-workbench ~/.hermes/skills/   # 例：Hermes
 
 ## 试跑
 
-`examples/虚构买卖合同案/` 是一个全部虚构的买卖合同案件（两批 7 份材料），故意埋了几处要靠交叉比对才能发现的矛盾，可以用来检验事实核查员。
+`legal-case-workbench/examples/虚构买卖合同案/` 是一个全部虚构的买卖合同案件（两批 7 份材料），故意埋了几处要靠交叉比对才能发现的矛盾，可以用来检验事实核查员。它在技能文件夹里，随技能一起安装；装好后对 agent 说“用案件分析工作台自带的示例案件试跑一下”即可。
 
 ## 来源
 
