@@ -6,7 +6,7 @@
 
 用法：
   python3 list_cases.py <案件根目录>              列出全部
-  python3 list_cases.py <案件根目录> <关键词>     只列名称、代号、案号里含关键词的
+  python3 list_cases.py <案件根目录> <关键词>     只列名称、当事人简称、案由、代号、案号、文件夹名里含关键词的
 """
 import json
 import os
@@ -41,7 +41,7 @@ def main():
             s = json.load(f)
         case_no, stage = overview(folder)
         row = (s.get('案件名称', ''), s.get('案件代号', ''), case_no, stage, name)
-        if kw and not any(kw in x for x in row[:3] + (name,)):
+        if kw and not any(kw in x for x in row + (s.get('当事人简称', ''), s.get('案由', ''))):
             continue
         rows.append(row)
 

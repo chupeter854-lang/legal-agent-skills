@@ -10,7 +10,7 @@ Works on **Hermes, Claude Code, Cursor, Codex** and any other agent platform tha
 |---|---|
 | **[subagent-dispatch](subagent-dispatch/SKILL.md)** | To split or not to split: deciding whether a piece of work gets done in the main context or handed to a subagent. The core rule is "material stays whole; functions may split". |
 | **[legal-case-workbench](legal-case-workbench/SKILL.md)** | A case analysis workbench: one long-lived workspace per case, where fact verification, legal research, analysis and drafting all happen. |
-| **[workspace-boundary](workspace-boundary/SKILL.md)** | Workspace boundary: keep the agent reading and writing inside one folder you choose. Platform settings lock it in (a one-step script plus self-test for Claude Code); working rules make it ask instead of searching, and route new files through an inbox. |
+| **[workspace-boundary](workspace-boundary/SKILL.md)** | Workspace boundary: keep the agent reading and writing inside one folder you choose. Platform settings lock it in (a one-step script plus self-test for Claude Code); working rules make it ask instead of searching, and keep new files in each case's fixed folder. |
 
 The first is a methodology; the second is one concrete implementation of it. Each works on its own, but they read better together — why the workbench uses three roles, and why evidence is never split, is answered in the rules.
 
@@ -56,7 +56,7 @@ The skill does not open new conversations by itself. Start a new conversation an
 
 ## Read/write boundary: the agent touches only the folder you choose
 
-Agents differ widely in how they treat files; some will read the whole machine. **A prompt in a skill cannot stop that** — the real boundary comes from the platform's permission settings. `workspace-boundary` ships a one-step script for Claude Code: pick a cases root as the workspace, and both file tools and shell commands are locked inside it, with a self-test to confirm it actually holds. New material always goes into the root's `收件箱/` (inbox); the workbench finds or creates the matching case and files it, so you never pick a path.
+Agents differ widely in how they treat files; some will read the whole machine. **A prompt in a skill cannot stop that** — the real boundary comes from the platform's permission settings. `workspace-boundary` ships a one-step script for Claude Code: pick a cases root as the workspace, and both file tools and shell commands are locked inside it, with a self-test to confirm it actually holds. Each case gets one fixed folder under the root, named "party short name + cause of action + 案件_creation date" (e.g. "徐某某买卖合同纠纷案件_20261101") and created by the workbench; name the case and it knows where the files are, so you never pick a path.
 
 ## Four things to fill in before deploying
 
