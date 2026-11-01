@@ -2,6 +2,8 @@
 
 Two agent skills, meant to be used together.
 
+Works on **Hermes, Claude Code, Cursor, Codex** and any other agent platform that supports skill files plus subagents or tool calls — the skills are plain Markdown with a few Python scripts, bound to no specific platform.
+
 **中文：**[README.md](README.md)
 
 | Skill | In one line |

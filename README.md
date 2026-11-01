@@ -2,6 +2,8 @@
 
 两个 agent 技能，配套使用。
 
+适用于 **Hermes、Claude Code、Cursor、Codex** 等任何支持「技能文件 + 子代理 / 工具调用」的 agent 平台——技能本身是纯 Markdown 加几个 Python 脚本，不绑定特定平台。
+
 **English:** [README.en.md](README.en.md)
 
 | 技能 | 一句话 |
