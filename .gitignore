@@ -1,3 +1,6 @@
 .DS_Store
 __pycache__/
 *.pyc
+
+# 使用者自己的本地配置（保密规则、目录约定等），不进公开仓库
+legal-case-workbench/references/本地配置.md

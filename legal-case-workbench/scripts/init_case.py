@@ -2,8 +2,10 @@
 """为一个案件建立工作台文件夹：案件索引、四张登记表、议题、材料卡、法律检索、草稿、工作记录。
 
 用法：
-  python3 init_case.py <案件文件夹> --name 案件名称 [--type 民事] [--code 代号]
-  新材料放进 <案件文件夹>/材料/。
+  python3 init_case.py <案件文件夹> --name 案件名称 [--type 民事] [--code 代号] [--materials-dir 目录]
+  默认新材料放进 <案件文件夹>/材料/。
+  材料已经放在别处的（例如脱敏工具的导出目录），用 --materials-dir 指过去：该目录必须已存在，
+  只读取、不移动、不改动；设置里记为相对于案件文件夹的路径，整体搬动两个文件夹时不失效。
 
 脱敏在把材料放进材料目录之前完成，本脚本不处理脱敏。
 
@@ -26,16 +28,24 @@ def main():
     ap.add_argument('--name', required=True, help='案件名称')
     ap.add_argument('--type', default='未填')
     ap.add_argument('--code', default='')
+    ap.add_argument('--materials-dir', help='材料所在目录（已存在、只读）；不给就用 <案件文件夹>/材料')
     a = ap.parse_args()
 
     tracker = os.path.abspath(a.folder)
-    materials = '材料'
     name, code = a.name, a.code
+    if a.materials_dir:
+        mdir = os.path.abspath(a.materials_dir)
+        if not os.path.isdir(mdir):
+            sys.exit(f'材料目录不存在：{mdir}')
+        materials = os.path.relpath(mdir, tracker)
+    else:
+        materials = '材料'
 
     os.makedirs(tracker, exist_ok=True)
     for d in ['议题', '材料卡', '草稿', '工作记录', '法律检索']:
         os.makedirs(os.path.join(tracker, d), exist_ok=True)
-    os.makedirs(os.path.join(tracker, materials), exist_ok=True)
+    if not a.materials_dir:
+        os.makedirs(os.path.join(tracker, materials), exist_ok=True)
 
     today = datetime.date.today().isoformat()
     fill = {'{案件名称}': name, '{案件代号}': code or '无', '{案件类型}': a.type, '{日期}': today}
@@ -59,7 +69,7 @@ def main():
                 '案件名称': name,
                 '案件代号': code,
                 '案件类型': a.type,
-                '来源': '本地文件夹',
+                '来源': '外部材料目录' if a.materials_dir else '本地文件夹',
                 '材料目录': materials,
                 '已脱敏': False,
                 '索引行数上限': 150,

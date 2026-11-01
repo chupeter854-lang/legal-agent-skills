@@ -36,7 +36,9 @@ Drop them into your agent's skills directory — the path varies by platform; tw
 ```bash
 cp -r subagent-dispatch legal-case-workbench ~/.claude/skills/   # e.g. Claude Code
 cp -r subagent-dispatch legal-case-workbench ~/.hermes/skills/   # e.g. Hermes
-``` Both are plain Markdown plus a few Python scripts (`legal-case-workbench/scripts/`) with no external dependencies.
+```
+
+Both are plain Markdown plus a few Python scripts (`legal-case-workbench/scripts/`) with no external dependencies.
 
 ## Four things to fill in before deploying
 
@@ -44,14 +46,21 @@ The skills bind no specific platform or service, but four items are environment-
 
 | Item | What to do |
 |---|---|
-| Confidentiality and de-identification rules | Step 0 of `legal-case-workbench` is intentionally blank — **hand your firm's rules to the AI and ask it to write them into that section**: which cases get no workbench, de-identification standard, external-release approval. |
+| Confidentiality and de-identification rules | Copy `legal-case-workbench/references/本地配置.示例.md` to `本地配置.md` and fill in which cases get no workbench, your de-identification standard, where materials live, and which skills to hand off to. That file is in `.gitignore` and never committed; the skill reads it first every time. |
 | Legal research source | Defaults to PKULaw MCP (seven tools under the service name `pkulaw`). Without it, swap in whatever database you have, or fall back to the official statute database. |
 | Quota budget | One lookup and one verification each cost one call. Adjust the estimation factor to your account. |
 | Subagent model | The axis is "would a wrong answer be visible", not "is the work hard". Never use the cheapest tier for legal research. |
 
-## One platform difference you must know
+## One platform difference you must know: can a subagent be resumed?
 
-On most platforms a subagent is **one-shot**: it finishes and ends, and there is no "ask the same one again". What keeps it oriented is the files it writes. When new material arrives, spawn a fresh verifier and put this in the dispatch: "read the material register, timeline, deadline table and material cards first, then process this batch." If you need to add something while it is still running, use the platform's live channel for appending instructions to a running subagent.
+- **Platforms that can resume a subagent** (e.g. Claude Code: send a message to a finished subagent with SendMessage and it carries on with its original context): send follow-up fact questions and the next batch of material to the same fact verifier.
+- **Platforms where subagents are one-shot**: it finishes and ends. When new material arrives, spawn a fresh verifier and put this in the dispatch: "read the material register, timeline, deadline table and material cards first, then process this batch." To add something while it is running, use the platform's live channel.
+
+Either way, the case files are the record of truth: anything a subagent remembers but did not write down does not count.
+
+## Try it
+
+`examples/虚构买卖合同案/` is an entirely fictional sale-of-goods case (two batches, seven documents) with several contradictions that only cross-checking will catch — a ready-made test for the fact verifier.
 
 ## Credits
 
