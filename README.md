@@ -1,6 +1,6 @@
 # legal-agent-skills
 
-两个 agent 技能，配套使用。
+三个 agent 技能，配套使用。
 
 适用于 **Hermes、Claude Code、Cursor、Codex** 等任何支持「技能文件 + 子代理 / 工具调用」的 agent 平台——技能本身是纯 Markdown 加几个 Python 脚本，不绑定特定平台。
 
@@ -10,6 +10,7 @@
 |---|---|
 | **[subagent-dispatch](subagent-dispatch/SKILL.md)** | 拆不拆：决定一项工作自己做完，还是分派给子代理。核心判据是「材料不拆，职能可拆」。 |
 | **[legal-case-workbench](legal-case-workbench/SKILL.md)** | 案件分析工作台：每个案件一个长期保存的工作空间，完成事实梳理与核实、法律检索、分析与起草。 |
+| **[workspace-boundary](workspace-boundary/SKILL.md)** | 工作区边界：让 agent 只在指定的一个文件夹里读写。平台层用权限与沙箱设置锁死（Claude Code 有一键脚本和自测），技能层规定找不到就问、新文件走收件箱。 |
 
 前者是方法论，后者是按方法论写死的一个具体实现。可以单独用，但一起看更清楚——工作台里为什么要分三个角色、为什么证据不拆，答案在规则里。
 
@@ -32,8 +33,8 @@
 放进你的 agent 技能目录即可，各平台路径不同，下面是两个例子：
 
 ```bash
-cp -r subagent-dispatch legal-case-workbench ~/.claude/skills/   # 例：Claude Code
-cp -r subagent-dispatch legal-case-workbench ~/.hermes/skills/   # 例：Hermes
+cp -r subagent-dispatch legal-case-workbench workspace-boundary ~/.claude/skills/   # 例：Claude Code
+cp -r subagent-dispatch legal-case-workbench workspace-boundary ~/.hermes/skills/   # 例：Hermes
 ```
 
 两个都是纯 Markdown + 少量 Python 脚本（`legal-case-workbench/scripts/`），无外部依赖。
@@ -44,11 +45,16 @@ cp -r subagent-dispatch legal-case-workbench ~/.hermes/skills/   # 例：Hermes
 git clone https://github.com/chupeter854-lang/legal-agent-skills.git
 ln -s "$PWD/legal-agent-skills/legal-case-workbench" ~/.claude/skills/legal-case-workbench
 ln -s "$PWD/legal-agent-skills/subagent-dispatch"    ~/.claude/skills/subagent-dispatch
+ln -s "$PWD/legal-agent-skills/workspace-boundary"   ~/.claude/skills/workspace-boundary
 ```
 
 ## 怎么启动
 
 技能不会自己开新对话。新建一个对话，说“给某某案建立案件工作台”；以后每次新开对话说“打开某某案”，它读一页案件索引就接着干。读材料、查法条的活由它在当前对话里派子代理完成，子代理不是新会话。详见 [legal-case-workbench/README.md](legal-case-workbench/README.md) 的“怎么启动”。
+
+## 读写边界：agent 只碰你指定的文件夹
+
+不同 agent 对文件的处理差别很大，有的会读整台电脑。**技能里的提示词挡不住它**，真正的边界要靠平台的权限设置。`workspace-boundary` 给 Claude Code 准备了一键脚本：指定一个“案件根目录”作为工作区，文件工具和 shell 命令都被锁在里面，并附自测脚本确认真的生效。新材料一律拖进根目录里的 `收件箱/`，工作台负责找到或新建对应案件并归档，你不用每次选路径。
 
 ## 部署前要改的四处
 
@@ -60,6 +66,7 @@ ln -s "$PWD/legal-agent-skills/subagent-dispatch"    ~/.claude/skills/subagent-d
 | 法律检索渠道 | 默认用北大法宝 MCP（工具名 `pkulaw` 下的七个工具）。没有的，改成你手上的数据库，或降级到官方法规库 |
 | 额度预算 | 检索一次、复核一次各算一次调用；按你的账户调整估算系数 |
 | 子代理模型 | 分层轴是「错了能不能被发现」，不是「活难不难」。法律检索不要用最便宜的档 |
+| 案件根目录与读写边界 | 选一个专用文件夹作为案件根目录，运行 `workspace-boundary/scripts/setup_workspace.py` 设好边界；私密材料、原件不放进去 |
 
 ## 一个必须知道的平台差异：能不能续用子代理
 

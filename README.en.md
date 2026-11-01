@@ -1,6 +1,6 @@
 # legal-agent-skills
 
-Two agent skills, meant to be used together.
+Three agent skills, meant to be used together.
 
 Works on **Hermes, Claude Code, Cursor, Codex** and any other agent platform that supports skill files plus subagents or tool calls — the skills are plain Markdown with a few Python scripts, bound to no specific platform.
 
@@ -10,6 +10,7 @@ Works on **Hermes, Claude Code, Cursor, Codex** and any other agent platform tha
 |---|---|
 | **[subagent-dispatch](subagent-dispatch/SKILL.md)** | To split or not to split: deciding whether a piece of work gets done in the main context or handed to a subagent. The core rule is "material stays whole; functions may split". |
 | **[legal-case-workbench](legal-case-workbench/SKILL.md)** | A case analysis workbench: one long-lived workspace per case, where fact verification, legal research, analysis and drafting all happen. |
+| **[workspace-boundary](workspace-boundary/SKILL.md)** | Workspace boundary: keep the agent reading and writing inside one folder you choose. Platform settings lock it in (a one-step script plus self-test for Claude Code); working rules make it ask instead of searching, and route new files through an inbox. |
 
 The first is a methodology; the second is one concrete implementation of it. Each works on its own, but they read better together — why the workbench uses three roles, and why evidence is never split, is answered in the rules.
 
@@ -34,8 +35,8 @@ There are exactly three roles. One **fact verifier** holds all the evidence — 
 Drop them into your agent's skills directory — the path varies by platform; two examples:
 
 ```bash
-cp -r subagent-dispatch legal-case-workbench ~/.claude/skills/   # e.g. Claude Code
-cp -r subagent-dispatch legal-case-workbench ~/.hermes/skills/   # e.g. Hermes
+cp -r subagent-dispatch legal-case-workbench workspace-boundary ~/.claude/skills/   # e.g. Claude Code
+cp -r subagent-dispatch legal-case-workbench workspace-boundary ~/.hermes/skills/   # e.g. Hermes
 ```
 
 Both are plain Markdown plus a few Python scripts (`legal-case-workbench/scripts/`) with no external dependencies.
@@ -46,11 +47,16 @@ To update later with `git pull`, clone the repo and symlink the skills into your
 git clone https://github.com/chupeter854-lang/legal-agent-skills.git
 ln -s "$PWD/legal-agent-skills/legal-case-workbench" ~/.claude/skills/legal-case-workbench
 ln -s "$PWD/legal-agent-skills/subagent-dispatch"    ~/.claude/skills/subagent-dispatch
+ln -s "$PWD/legal-agent-skills/workspace-boundary"   ~/.claude/skills/workspace-boundary
 ```
 
 ## Getting started
 
 The skill does not open new conversations by itself. Start a new conversation and say "给某某案建立案件工作台" (set up a case workbench for case X); each later session, open a new conversation and say "打开某某案" (open case X) — it reads the one-page case index and carries on. Reading material and looking up law are done by subagents it dispatches inside the current conversation; they are not separate sessions. See "怎么启动" in [legal-case-workbench/README.md](legal-case-workbench/README.md).
+
+## Read/write boundary: the agent touches only the folder you choose
+
+Agents differ widely in how they treat files; some will read the whole machine. **A prompt in a skill cannot stop that** — the real boundary comes from the platform's permission settings. `workspace-boundary` ships a one-step script for Claude Code: pick a cases root as the workspace, and both file tools and shell commands are locked inside it, with a self-test to confirm it actually holds. New material always goes into the root's `收件箱/` (inbox); the workbench finds or creates the matching case and files it, so you never pick a path.
 
 ## Four things to fill in before deploying
 
@@ -62,6 +68,7 @@ The skills bind no specific platform or service, but four items are environment-
 | Legal research source | Defaults to PKULaw MCP (seven tools under the service name `pkulaw`). Without it, swap in whatever database you have, or fall back to the official statute database. |
 | Quota budget | One lookup and one verification each cost one call. Adjust the estimation factor to your account. |
 | Subagent model | The axis is "would a wrong answer be visible", not "is the work hard". Never use the cheapest tier for legal research. |
+| Cases root and boundary | Pick a dedicated folder as the cases root and run `workspace-boundary/scripts/setup_workspace.py` on it; keep private material and originals out of it. |
 
 ## One platform difference you must know: can a subagent be resumed?
 

@@ -1,6 +1,6 @@
 # 案件分析工作台使用说明
 
-技能名称：`legal-case-workbench`（v0.5.1）
+技能名称：`legal-case-workbench`（v0.6）
 安装：把整个 `legal-case-workbench/` 文件夹放进你的 agent 技能目录即装好（各平台路径不同，通常是 `~/.<agent>/skills/`）。也可以临时放在任意目录，指示 AI「按 legal-case-workbench 的 SKILL.md 操作」。
 原名“案件跟踪”（legal-case-tracker），2026-11-01 改为现名：功能已从长期跟踪扩展到事实核查、法律检索、分析和起草。
 思路来源：DeepSeek Harness 团队《Super-agent 设计探索》（2026-10-31），只取本地可用的部分，去掉了云端常驻。拆法依据：同仓库的 [`subagent-dispatch`](../subagent-dispatch/SKILL.md)（子代理分派规则）。
@@ -25,10 +25,11 @@
 
 **第一次：建工作台**
 
-1. 新建一个对话（Claude Code 桌面 App 的 Code 标签页、终端里的 `claude`，或你所用 agent 平台的新会话），工作文件夹选放案件的地方。案件文件夹在工作文件夹以外的，平台会先问你是否授权访问。
-2. 说“给某某案建立案件工作台，放在 <文件夹>”。说出“建立案件工作台”“打开某某案”“新材料到了”这类话，技能会自动启用；没有反应时，在 Claude Code 里输入 `/legal-case-workbench` 直接调用。
+0. **只做一次：定案件根目录。** 选一个专用文件夹（例如 `~/案件工作区`，不要用桌面、下载或整个文稿），里面建 `收件箱/`，用 [`workspace-boundary`](../workspace-boundary/SKILL.md) 的脚本设好读写边界：`python3 workspace-boundary/scripts/setup_workspace.py ~/案件工作区`。私密材料、原件不放进去。
+1. 新建一个对话（Claude Code 桌面 App 的 Code 标签页、终端里的 `claude`，或你所用 agent 平台的新会话），**工作文件夹选案件根目录**。第一次打开要接受信任提示。
+2. 把材料拖进 `收件箱/`，说“这是某某案的材料”。它会在根目录里找到这个案件（没有就新建，以案件名命名），把文件归进去，你不用选路径。也可以直接说“给某某案建立案件工作台”。说出“建立案件工作台”“打开某某案”“新材料到了”这类话，技能会自动启用；没有反应时，在 Claude Code 里输入 `/legal-case-workbench` 直接调用。
 3. 它先确认材料能否交给 AI，再问案号、程序阶段、当事人称谓，建好文件夹和第一个议题。
-4. 把材料放进 `材料/`（或建档时用 `--materials-dir` 指定的目录），说“新材料到了”。
+4. 以后有新材料，照样拖进 `收件箱/`，说“某某案的新材料到了”。
 
 **以后：接着干**
 
@@ -93,6 +94,8 @@
 - 新增本地配置层：`references/本地配置.md`（不进仓库，示例见 `本地配置.示例.md`），放使用者自己的保密规则、材料目录约定、衔接技能；与 SKILL.md 冲突的以它为准。
 - `init_case.py` 新增 `--materials-dir`：材料放在别处（如脱敏工具的导出目录）时直接指过去，只读不动。
 - 新增虚构示例案件。
+
+**v0.6**：案件根目录＋收件箱。`init_case.py --root` 按案件名在根目录下建文件夹；`list_cases.py` 按名称、代号、案号找案件；`file_inbox.py` 把收件箱里的文件归进案件并记收件记录（同名不覆盖）。读写边界交给新技能 `workspace-boundary`。
 
 **v0.5.1**：示例案件移入技能文件夹（`legal-case-workbench/examples/`），随技能一起安装，不再因为只复制技能目录而丢失；README 新增“怎么启动”。
 
