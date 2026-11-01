@@ -2,7 +2,7 @@
 
 三个 agent 技能，配套使用。
 
-适用于 **Hermes、Claude Code、Cursor、Codex** 等任何支持「技能文件 + 子代理 / 工具调用」的 agent 平台——技能本身是纯 Markdown 加几个 Python 脚本，不绑定特定平台。
+适用于 **Hermes、Claude Code、Cursor、Codex** 等任何支持「技能文件 + 子代理 / 工具调用」的 agent 平台——技能本身是纯 Markdown 加几个 Python 脚本。两处例外以 Claude Code 为准：模型名（sonnet、haiku）和读写边界的一键脚本；其他平台按对应说明自行换算、配置。
 
 **English:** [README.en.md](README.en.md)
 
@@ -12,9 +12,9 @@
 | **[legal-case-workbench](legal-case-workbench/SKILL.md)** | 案件分析工作台：每个案件一个长期保存的工作空间，完成事实梳理与核实、法律检索、分析与起草。 |
 | **[workspace-boundary](workspace-boundary/SKILL.md)** | 工作区边界：让 agent 只在指定的一个文件夹里读写。平台层用权限与沙箱设置锁死（Claude Code 有一键脚本和自测），技能层规定找不到就问、新文件放进对应案件的固定文件夹。 |
 
-前者是方法论，后者是按方法论写死的一个具体实现。可以单独用，但一起看更清楚——工作台里为什么要分三个角色、为什么证据不拆，答案在规则里。
+`subagent-dispatch` 是方法论，`legal-case-workbench` 是按它写死的一个具体实现，`workspace-boundary` 是底下的安全层（agent 只碰指定的文件夹）。三者可以单独用，但一起看更清楚——工作台里为什么要分三个角色、为什么证据不拆，答案在分派规则里。
 
-## 两个技能解决的两个问题
+## 三个技能解决的三个问题
 
 **一、什么时候该派子代理？**
 
@@ -28,6 +28,10 @@
 
 分工只有三个角色：一个事实核查员掌握全部证据材料（入卷、交叉比对、回答事实问题）；一个法律检索员只拿去掉当事人信息的抽象法律问题去查法规和案例；主对话负责把事实和法律结合起来分析、起草、和律师沟通。
 
+**三、agent 会不会到处读我电脑里的文件？**
+
+不同 agent 对文件的处理差别很大，有的只在启动它的文件夹里读写，有的会读整台电脑。**技能里的提示词挡不住它**，真正的边界要靠平台的权限设置。`workspace-boundary` 分两层：平台层把文件工具和 shell 命令锁在一个“案件根目录”里（Claude Code 有一键脚本和自测脚本）；技能层规定 agent 找不到就问、不在外面搜、被挡住就报告。每个案件在根目录下有一个固定文件夹，按“当事人简称＋案由＋案件_建立日期”命名（如“徐某某买卖合同纠纷案件_20261101”），由工作台自动建；你说案件名，它就知道文件在哪里，不用每次选路径。
+
 ## 安装
 
 放进你的 agent 技能目录即可，各平台路径不同，下面是两个例子：
@@ -37,7 +41,7 @@ cp -r subagent-dispatch legal-case-workbench workspace-boundary ~/.claude/skills
 cp -r subagent-dispatch legal-case-workbench workspace-boundary ~/.hermes/skills/   # 例：Hermes
 ```
 
-两个都是纯 Markdown + 少量 Python 脚本（`legal-case-workbench/scripts/`），无外部依赖。
+三个都是纯 Markdown，另有少量 Python 脚本（`legal-case-workbench/scripts/`、`workspace-boundary/scripts/`），只用标准库，无外部依赖。
 
 想以后用 `git pull` 更新，可以把仓库克隆到本地，再用软链接接进技能目录：
 
@@ -50,13 +54,9 @@ ln -s "$PWD/legal-agent-skills/workspace-boundary"   ~/.claude/skills/workspace-
 
 ## 怎么启动
 
-技能不会自己开新对话。新建一个对话，说“给某某案建立案件工作台”；以后每次新开对话说“打开某某案”，它读一页案件索引就接着干。读材料、查法条的活由它在当前对话里派子代理完成，子代理不是新会话。详见 [legal-case-workbench/README.md](legal-case-workbench/README.md) 的“怎么启动”。
+技能不会自己开新对话。先设好案件根目录（见下表最后一项），以它为工作文件夹新建一个对话，说“给徐某某买卖合同纠纷建个档”；以后每次新开对话说“打开徐某某的案子”，它读一页案件索引就接着干。读材料、查法条的活由它在当前对话里派子代理完成，子代理不是新会话。详见 [legal-case-workbench/README.md](legal-case-workbench/README.md) 的“怎么启动”。
 
-## 读写边界：agent 只碰你指定的文件夹
-
-不同 agent 对文件的处理差别很大，有的会读整台电脑。**技能里的提示词挡不住它**，真正的边界要靠平台的权限设置。`workspace-boundary` 给 Claude Code 准备了一键脚本：指定一个“案件根目录”作为工作区，文件工具和 shell 命令都被锁在里面，并附自测脚本确认真的生效。每个案件在根目录下有一个固定文件夹，按“当事人简称＋案由＋案件_建立日期”命名（如“徐某某买卖合同纠纷案件_20261101”），由工作台自动建；你说案件名，它就知道文件在哪里，不用每次选路径。
-
-## 部署前要改的四处
+## 部署前要改的五处
 
 技能不绑定具体平台和服务，但有几处必须按你的环境填：
 

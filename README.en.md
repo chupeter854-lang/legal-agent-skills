@@ -2,7 +2,7 @@
 
 Three agent skills, meant to be used together.
 
-Works on **Hermes, Claude Code, Cursor, Codex** and any other agent platform that supports skill files plus subagents or tool calls — the skills are plain Markdown with a few Python scripts, bound to no specific platform.
+Works on **Hermes, Claude Code, Cursor, Codex** and any other agent platform that supports skill files plus subagents or tool calls — the skills are plain Markdown with a few Python scripts. Two things follow Claude Code: model names (sonnet, haiku) and the one-step boundary script; on other platforms, map or configure them per the notes.
 
 **中文：**[README.md](README.md)
 
@@ -12,11 +12,11 @@ Works on **Hermes, Claude Code, Cursor, Codex** and any other agent platform tha
 | **[legal-case-workbench](legal-case-workbench/SKILL.md)** | A case analysis workbench: one long-lived workspace per case, where fact verification, legal research, analysis and drafting all happen. |
 | **[workspace-boundary](workspace-boundary/SKILL.md)** | Workspace boundary: keep the agent reading and writing inside one folder you choose. Platform settings lock it in (a one-step script plus self-test for Claude Code); working rules make it ask instead of searching, and keep new files in each case's fixed folder. |
 
-The first is a methodology; the second is one concrete implementation of it. Each works on its own, but they read better together — why the workbench uses three roles, and why evidence is never split, is answered in the rules.
+`subagent-dispatch` is the methodology, `legal-case-workbench` is one concrete implementation of it, and `workspace-boundary` is the safety layer underneath (the agent touches only the folder you choose). Each works on its own, but they read better together — why the workbench uses three roles, and why evidence is never split, is answered in the dispatch rules.
 
-Both are written for legal practice, but the dispatch rules are domain-neutral.
+All three are written for legal practice; the dispatch rules and the boundary are domain-neutral.
 
-## The two problems they solve
+## The three problems they solve
 
 **One: when should work go to a subagent?**
 
@@ -30,6 +30,10 @@ Wire a subagent tool into a single-session agent and two failures appear reliabl
 
 There are exactly three roles. One **fact verifier** holds all the evidence — filing, cross-checking, answering factual questions. One **legal researcher** takes only abstract legal questions with party details stripped, and looks up statutes and cases. The **main dialogue** combines facts and law, drafts, and talks to the lawyer.
 
+**Three: will the agent read files all over my computer?**
+
+Agents differ widely in how they treat files: some stay in the folder they were started in, others will read the whole machine. **A prompt in a skill cannot stop that** — the real boundary comes from the platform's permission settings. `workspace-boundary` works in two layers: the platform layer locks file tools and shell commands inside one cases root (Claude Code gets a one-step script and a self-test); the working rules make the agent ask instead of searching, and report rather than work around a denial. Each case gets one fixed folder under the root, named "party short name + cause of action + 案件_creation date" (e.g. "徐某某买卖合同纠纷案件_20261101") and created by the workbench; name the case and it knows where the files are, so you never pick a path.
+
 ## Install
 
 Drop them into your agent's skills directory — the path varies by platform; two examples:
@@ -39,7 +43,7 @@ cp -r subagent-dispatch legal-case-workbench workspace-boundary ~/.claude/skills
 cp -r subagent-dispatch legal-case-workbench workspace-boundary ~/.hermes/skills/   # e.g. Hermes
 ```
 
-Both are plain Markdown plus a few Python scripts (`legal-case-workbench/scripts/`) with no external dependencies.
+All three are plain Markdown, plus a few standard-library Python scripts (`legal-case-workbench/scripts/`, `workspace-boundary/scripts/`) with no external dependencies.
 
 To update later with `git pull`, clone the repo and symlink the skills into your skills directory:
 
@@ -52,15 +56,11 @@ ln -s "$PWD/legal-agent-skills/workspace-boundary"   ~/.claude/skills/workspace-
 
 ## Getting started
 
-The skill does not open new conversations by itself. Start a new conversation and say "给某某案建立案件工作台" (set up a case workbench for case X); each later session, open a new conversation and say "打开某某案" (open case X) — it reads the one-page case index and carries on. Reading material and looking up law are done by subagents it dispatches inside the current conversation; they are not separate sessions. See "怎么启动" in [legal-case-workbench/README.md](legal-case-workbench/README.md).
+The skill does not open new conversations by itself. Set up the cases root first (last row of the table below), start a new conversation with it as the working folder, and say "给徐某某买卖合同纠纷建个档" (open a file for 徐某某's sale-of-goods dispute); each later session, open a new conversation and say "打开徐某某的案子" (open 徐某某's case) — it reads the one-page case index and carries on. Reading material and looking up law are done by subagents it dispatches inside the current conversation; they are not separate sessions. See "怎么启动" in [legal-case-workbench/README.md](legal-case-workbench/README.md).
 
-## Read/write boundary: the agent touches only the folder you choose
+## Five things to fill in before deploying
 
-Agents differ widely in how they treat files; some will read the whole machine. **A prompt in a skill cannot stop that** — the real boundary comes from the platform's permission settings. `workspace-boundary` ships a one-step script for Claude Code: pick a cases root as the workspace, and both file tools and shell commands are locked inside it, with a self-test to confirm it actually holds. Each case gets one fixed folder under the root, named "party short name + cause of action + 案件_creation date" (e.g. "徐某某买卖合同纠纷案件_20261101") and created by the workbench; name the case and it knows where the files are, so you never pick a path.
-
-## Four things to fill in before deploying
-
-The skills bind no specific platform or service, but four items are environment-specific:
+The skills bind no specific platform or service, but five items are environment-specific:
 
 | Item | What to do |
 |---|---|
