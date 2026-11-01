@@ -2,6 +2,8 @@
 
 两个 agent 技能，配套使用。
 
+**English:** [README.en.md](README.en.md)
+
 | 技能 | 一句话 |
 |---|---|
 | **[subagent-dispatch](subagent-dispatch/SKILL.md)** | 拆不拆：决定一项工作自己做完，还是分派给子代理。核心判据是「材料不拆，职能可拆」。 |
@@ -38,7 +40,7 @@ cp -r subagent-dispatch legal-case-workbench ~/.hermes/skills/   # Hermes
 
 | 项 | 说明 |
 |---|---|
-| 保密与脱敏要求 | `legal-case-workbench` 第 0 步留了空——把你们所的规则补进去，哪些案件不建档、脱敏标准、外发审批 |
+| 保密与脱敏要求 | `legal-case-workbench` 第 0 步留了空——**把这份要求发给 AI，让它补进本节**：哪些案件不建档、脱敏标准、外发审批流程 |
 | 法律检索渠道 | 默认用北大法宝 MCP（工具名 `pkulaw` 下的七个工具）。没有的，改成你手上的数据库，或降级到官方法规库 |
 | 额度预算 | 检索一次、复核一次各算一次调用；按你的账户调整估算系数 |
 | 子代理模型 | 分层轴是「错了能不能被发现」，不是「活难不难」。法律检索不要用最便宜的档 |
