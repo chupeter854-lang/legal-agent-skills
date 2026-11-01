@@ -27,12 +27,12 @@
 
 ## 安装
 
-```bash
-cp -r subagent-dispatch legal-case-workbench ~/.claude/skills/   # Claude Code
-cp -r subagent-dispatch legal-case-workbench ~/.hermes/skills/   # Hermes
-```
+放进你的 agent 技能目录即可，各平台路径不同，下面是两个例子：
 
-或放到任何 agent 的技能目录。两个都是纯 Markdown + 少量 Python 脚本（`legal-case-workbench/scripts/`），无外部依赖。
+```bash
+cp -r subagent-dispatch legal-case-workbench ~/.claude/skills/   # 例：Claude Code
+cp -r subagent-dispatch legal-case-workbench ~/.hermes/skills/   # 例：Hermes
+```两个都是纯 Markdown + 少量 Python 脚本（`legal-case-workbench/scripts/`），无外部依赖。
 
 ## 部署前要改的四处
 
@@ -47,7 +47,7 @@ cp -r subagent-dispatch legal-case-workbench ~/.hermes/skills/   # Hermes
 
 ## 一个必须知道的平台差异
 
-大多数平台的子代理是**一次性**的：跑完即结束，不能「接着问同一个」。要让它记得案情，靠的是它写下的文件——新材料入卷时新派一个，派单里写明「先读材料登记、时间线、期限表、材料卡，再处理本批」。运行中要补话，用平台的插话通道（Hermes 是 `delegate_task` 的 `steer`）。
+大多数平台的子代理是**一次性**的：跑完即结束，不能「接着问同一个」。要让它记得案情，靠的是它写下的文件——新材料入卷时新派一个，派单里写明「先读材料登记、时间线、期限表、材料卡，再处理本批」。运行中要补话，用平台提供的插话通道（给正在运行的子代理追加指令）。
 
 ## 来源
 

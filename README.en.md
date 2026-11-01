@@ -29,12 +29,12 @@ There are exactly three roles. One **fact verifier** holds all the evidence — 
 
 ## Install
 
-```bash
-cp -r subagent-dispatch legal-case-workbench ~/.claude/skills/   # Claude Code
-cp -r subagent-dispatch legal-case-workbench ~/.hermes/skills/   # Hermes
-```
+Drop them into your agent's skills directory — the path varies by platform; two examples:
 
-Or drop them into any agent's skills directory. Both are plain Markdown plus a few Python scripts (`legal-case-workbench/scripts/`) with no external dependencies.
+```bash
+cp -r subagent-dispatch legal-case-workbench ~/.claude/skills/   # e.g. Claude Code
+cp -r subagent-dispatch legal-case-workbench ~/.hermes/skills/   # e.g. Hermes
+``` Both are plain Markdown plus a few Python scripts (`legal-case-workbench/scripts/`) with no external dependencies.
 
 ## Four things to fill in before deploying
 
@@ -49,7 +49,7 @@ The skills bind no specific platform or service, but four items are environment-
 
 ## One platform difference you must know
 
-On most platforms a subagent is **one-shot**: it finishes and ends, and there is no "ask the same one again". What keeps it oriented is the files it writes. When new material arrives, spawn a fresh verifier and put this in the dispatch: "read the material register, timeline, deadline table and material cards first, then process this batch." If you need to add something while it is still running, use the platform's live channel (on Hermes that is `delegate_task` with `steer`).
+On most platforms a subagent is **one-shot**: it finishes and ends, and there is no "ask the same one again". What keeps it oriented is the files it writes. When new material arrives, spawn a fresh verifier and put this in the dispatch: "read the material register, timeline, deadline table and material cards first, then process this batch." If you need to add something while it is still running, use the platform's live channel for appending instructions to a running subagent.
 
 ## Credits
 
